@@ -1,0 +1,103 @@
+# =============== #
+# Unity Generated #
+# =============== #
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Uu]ser[Ss]ettings/
+[Rr]ecordings/
+
+
+# Exclude the following if using Unity Cloud Build
+/[Cc]ache/
+
+# ============ #
+# Auto-Generated #
+# ============ #
+/Assets/AssetStoreTools*
+
+# ================= #
+# Visual Studio / Rider #
+# ================= #
+ExportedObj/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+.vscode/settings.json
+.utmp/
+.vs/
+.vsconfig/
+
+# Unity3D generated meta files
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.unitypackage.meta
+*.app
+ServerBuild/
+AndroidBuild/
+LinuxRelease_Data/
+server_build_Data/
+server/
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# Packed Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Temporary auto-generated Android Assets
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Exports
+/exports/
+
+
+# ============= #
+# OS Specific #
+# ============= #
+
+# Windows
+[Dd]esktop.ini
+[Tt]humbs.db
+*.DS_Store
+
+# macOS
+._*
+.AppleDouble
+.LSOverride
+Icon
+__MACOSX/
+
+# =============== #
+# Version Control #
+# =============== #
+# *.meta
+# *.unity
+*.unitypackage
+
+UserSettings/Layouts/*.dwlt
+
