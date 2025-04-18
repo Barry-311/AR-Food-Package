@@ -26,7 +26,7 @@ public class VuforiaTargetHandler : MonoBehaviour
             targetStatus.Status == Status.EXTENDED_TRACKED)
         {
             string targetName = behaviour.TargetName;
-            string prompt = $"Tell me something about {targetName} in 100 words.";
+            string prompt = $"Tell me something about {targetName} in 30 words.";
             Debug.Log($"[Vuforia] prompt: {prompt}");
 
             geminiScript.userMessage = prompt;
