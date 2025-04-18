@@ -85,6 +85,7 @@ public class ChatRequest
 
 public class UnityAndGeminiV3: MonoBehaviour
 {
+    public string userMessage = "";
     [Header("JSON API Configuration")]
     public TextAsset jsonApi;
 
@@ -94,19 +95,12 @@ public class UnityAndGeminiV3: MonoBehaviour
     private string imageEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent"; //End point for image generation
 
     [Header("ChatBot Function")]
-    public TMP_InputField inputField;
     public TMP_Text uiText;
     private TextContent[] chatHistory;
-
-    [Header("Prompt Function")]
-    public string prompt = "Tell me something about starbucks";
 
     [Header("Image Prompt Function")]
     public string imagePrompt = "";
     public Material skyboxMaterial; 
-
-    [Header("3D TextMeshPro")]
-    public TextMeshPro text3D; 
 
 
     void Start()
@@ -114,50 +108,20 @@ public class UnityAndGeminiV3: MonoBehaviour
         UnityAndGeminiKey jsonApiKey = JsonUtility.FromJson<UnityAndGeminiKey>(jsonApi.text);
         apiKey = jsonApiKey.key;   
         chatHistory = new TextContent[] { };
-        if (prompt != ""){StartCoroutine( SendPromptRequestToGemini(prompt));};
-        if (imagePrompt != ""){StartCoroutine( SendPromptRequestToGeminiImageGenerator(imagePrompt));};
-    }
-
-    private IEnumerator SendPromptRequestToGemini(string promptText)
-    {
-        string url = $"{apiEndpoint}?key={apiKey}";
-     
-        string jsonData = "{\"contents\": [{\"parts\": [{\"text\": \"{" + promptText + "}\"}]}]}";
-
-        byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(jsonData);
-
-        // Create a UnityWebRequest with the JSON data
-        using (UnityWebRequest www = new UnityWebRequest(url, "POST")){
-            www.uploadHandler = new UploadHandlerRaw(jsonToSend);
-            www.downloadHandler = new DownloadHandlerBuffer();
-            www.SetRequestHeader("Content-Type", "application/json");
-
-            yield return www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success) {
-                Debug.LogError(www.error);
-            } else {
-                Debug.Log("Request complete!");
-                TextResponse response = JsonUtility.FromJson<TextResponse>(www.downloadHandler.text);
-                if (response.candidates.Length > 0 && response.candidates[0].content.parts.Length > 0)
-                    {
-                        //This is the response to your request
-                        string text = response.candidates[0].content.parts[0].text;
-                        Debug.Log(text);
-                    }
-                else
-                {
-                    Debug.Log("No text found.");
-                }
-            }
-        }
+        //if (prompt != ""){StartCoroutine( SendPromptRequestToGemini(prompt));};
+        //if (imagePrompt != ""){StartCoroutine( SendPromptRequestToGeminiImageGenerator(imagePrompt));};
     }
 
     public void SendChat()
     {
-        string userMessage = "Tell me something about starbucks in 50 words";
+        // string userMessage = "Tell me something about starbucks in 50 words";
         // string userMessage = inputField.text;
-        StartCoroutine( SendChatRequestToGemini(userMessage));
+        if (string.IsNullOrEmpty(userMessage))
+        {
+            Debug.LogWarning("userMessage empty");
+            return;
+        }
+        StartCoroutine(SendChatRequestToGemini(userMessage));
     }
 
     private IEnumerator SendChatRequestToGemini(string newMessage)
@@ -213,10 +177,6 @@ public class UnityAndGeminiV3: MonoBehaviour
                         Debug.Log(reply);
                         //This part shows the text in the Canvas
                         uiText.text = reply;
-                        if (text3D != null)
-                        {
-                            text3D.text = reply;
-                        }
 
                         //This part adds the response to the chat history, for your next message
                         contentsList.Add(botContent);
@@ -317,29 +277,6 @@ private IEnumerator SendPromptRequestToGeminiImageGenerator(string promptText)
                             {
                                 Debug.LogError("Skybox material not assigned!");
                             }
-
-                            // Another approach but might cause distorsion
-
-                            
-                            // Texture2D savedTex = new Texture2D(2, 2);
-                            // savedTex.LoadImage(File.ReadAllBytes(path));
-
-                            // // Convert to Cubemap (simplified approach - may distort)
-                            // Cubemap newCubemap = new Cubemap(savedTex.width, TextureFormat.RGBA32, false);
-                            // for (int i = 0; i < 6; i++)
-                            // {
-                            //     newCubemap.SetPixels(savedTex.GetPixels(), (CubemapFace)i);
-                            // }
-                            // newCubemap.Apply();
-
-                            // // Apply to skybox
-                            // if (skyboxMaterial != null)
-                            // {
-                            //     skyboxMaterial.SetTexture("_Tex", newCubemap);
-                            //     DynamicGI.UpdateEnvironment();
-                            //     Debug.Log("Skybox updated with new image!");
-                            // }                            
-
                         }
                     }
                 }
@@ -354,7 +291,7 @@ private IEnumerator SendPromptRequestToGeminiImageGenerator(string promptText)
             }
         }
     }
-    }
+}
 
 
     Texture2D ResizeTexture(Texture2D source, int newWidth, int newHeight)
