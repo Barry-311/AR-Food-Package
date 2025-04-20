@@ -1,4 +1,4 @@
-using UnityEngine;
+锘縰sing UnityEngine;
 using Vuforia;
 using Mediapipe;
 using Mediapipe.Unity;
@@ -7,14 +7,38 @@ using Mediapipe.Unity.Sample.HandLandmarkDetection;
 using Mediapipe.Unity.Sample;
 using System.Collections;
 using System;
+using UnityEngine.UI;
+using System.Collections.Concurrent;
+using static Mediapipe.BoxDetectorOptions.Types;
 
 public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
 {
     public readonly HandLandmarkDetectionConfig config = new HandLandmarkDetectionConfig();
+    [SerializeField] private Camera uiCamera;
+    [SerializeField] private FingertipUIButtonSystem fingertipUIButtonSystem;
+    private Vector2[] latestFingerScreenPoint = null;
 
+    private RectTransform buttonRectTransform;
+    private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
+    private bool wasPressing = false;
     private Mediapipe.Unity.Experimental.TextureFramePool _textureFramePool;
     private Texture2D cameraTexture;
     private Color32[] pixelBuffer;
+
+
+    void Awake()
+    {
+        config.NumHands = 10;
+    }
+
+    void Update()
+    {
+        while (_mainThreadActions.TryDequeue(out var action))
+        {
+            action?.Invoke();
+        }
+    }
+
 
     public override void Stop()
     {
@@ -44,7 +68,7 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
         yield return WaitForVuforiaVideoTexture();
 
 
-        // 从Vuforia初始化摄像头纹理
+        // 浠嶸uforia鍒濆鍖栨憚鍍忓ご绾圭悊
         var bgTexture = VuforiaBehaviour.Instance.VideoBackground.VideoBackgroundTexture;
 
         RenderTexture rt = new RenderTexture(bgTexture.width, bgTexture.height, 0, RenderTextureFormat.ARGB32);
@@ -63,14 +87,14 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
 
             yield return waitForEndOfFrame;
 
-            // 获取Vuforia当前视频背景纹理
+            // 鑾峰彇Vuforia褰撳墠瑙嗛鑳屾櫙绾圭悊
             if (VuforiaBehaviour.Instance.VideoBackground.VideoBackgroundTexture == null)
             {
                 Debug.LogWarning("Vuforia Video Background Texture is null");
                 continue;
             }
 
-            // 使用 Graphics.Blit 从RenderTexture转换到Texture2D
+            // 浣跨敤 Graphics.Blit 浠嶳enderTexture杞崲鍒癟exture2D
             Graphics.Blit(VuforiaBehaviour.Instance.VideoBackground.VideoBackgroundTexture, rt);
 
             RenderTexture.active = rt;
@@ -91,11 +115,87 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
 
     private void OnHandLandmarkDetectionOutput(HandLandmarkerResult result, Mediapipe.Image image, long timestamp)
     {
-        // 简单判断手势是否存在
-        if (result.handedness != null && result.handedness.Count > 0)
+        if (result.handedness == null || result.handedness.Count == 0)
         {
-            Debug.Log("手势已检测到！");
+            return;
+        }
+        //Debug.Log("Hand Detected!");
+
+        Vector2[] screenPoints = new Vector2[result.handLandmarks.Count];
+        for (int i = 0; i < result.handLandmarks.Count; i++)
+        {
+            var indexTip = result.handLandmarks[i].landmarks[8];
+            screenPoints[i] = new Vector2(indexTip.x * UnityEngine.Screen.width, (1 - indexTip.y) * UnityEngine.Screen.height);
+        }
+
+        latestFingerScreenPoint = screenPoints;
+
+        _mainThreadActions.Enqueue(() =>
+        {
+            //CheckFingerTouch(screenPoints);
+            fingertipUIButtonSystem.QueueFingerScreenPoints(screenPoints);
+        });
+    }
+
+    private void CheckFingerTouch(Vector2[] screenPoints)
+    {
+        if (buttonRectTransform == null)
+        {
+            Debug.LogWarning("Button RectTransform not assigned.");
+            return;
+        }
+
+        bool isAnyFingerTouching = false;
+
+        for (int i = 0; i < screenPoints.Length; i++)
+        {
+            if (RectTransformUtility.RectangleContainsScreenPoint(buttonRectTransform, screenPoints[i], uiCamera))
+            {
+                isAnyFingerTouching = true;
+                if (!wasPressing)
+                {
+                    wasPressing = true;
+                    Debug.Log("Finger touching the virtual button!");
+                    //playButton.onClick.Invoke();
+                }
+                break;
+            }
+
+        }
+
+        if(!isAnyFingerTouching)
+        {
+            wasPressing = false;
         }
     }
 
+#if UNITY_EDITOR
+    private void OnGUI()
+    {
+        for (int i = 0; latestFingerScreenPoint != null && i < latestFingerScreenPoint.Length; i++)
+        {
+            var p = latestFingerScreenPoint[i];
+            float flippedY = UnityEngine.Screen.height - p.y;
+
+            GUI.color = UnityEngine.Color.red;
+            GUI.DrawTexture(new UnityEngine.Rect(p.x - 5, flippedY - 5, 10, 10), Texture2D.whiteTexture);
+        }
+
+        //if (buttonRectTransform != null)
+        //{
+        //    Vector3[] worldCorners = new Vector3[4];
+        //    buttonRectTransform.GetWorldCorners(worldCorners);
+
+        //    Vector2 topLeft = RectTransformUtility.WorldToScreenPoint(Camera.main, worldCorners[1]);
+        //    Vector2 bottomRight = RectTransformUtility.WorldToScreenPoint(Camera.main, worldCorners[3]);
+
+        //    float width = bottomRight.x - topLeft.x;
+        //    float height = topLeft.y - bottomRight.y;
+
+        //    // Draw button bounding box
+        //    GUI.color = UnityEngine.Color.cyan;
+        //    GUI.DrawTexture(new UnityEngine.Rect(topLeft.x, UnityEngine.Screen.height - topLeft.y, width, height), Texture2D.whiteTexture);
+        //}
+    }
+#endif
 }
