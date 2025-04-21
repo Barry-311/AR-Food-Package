@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 
 // 注意命名空间要和 Models.cs 一致
-namespace YourNamespace.Weather
+namespace GetWeather.Weather
 {
     public class WeatherService : MonoBehaviour
     {

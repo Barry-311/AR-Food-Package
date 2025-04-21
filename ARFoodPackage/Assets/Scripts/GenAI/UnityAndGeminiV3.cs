@@ -14,7 +14,6 @@ public class UnityAndGeminiKey
     public string key;
 }
 
-// 1) STT 请求的配置与数据结构
 [System.Serializable]
 public class RecognitionConfig
 {
@@ -48,8 +47,9 @@ public class SpeechRecognitionResponse
 {
     public SpeechRecognitionResult[] results;
 }
+
 /// <summary>
-/// Gemini 请求的配置与数据结构
+/// Gemini V3 API response classes
 /// </summary>
 
 [System.Serializable]
@@ -96,10 +96,10 @@ public class UnityAndGeminiV3 : MonoBehaviour
 
     [Header("ChatBot Function")]
     public TMP_Text uiText;
+    public TMP_Text aiResText;
     private TextContent[] chatHistory;
 
-    // —— 新增 Speech-to-Text 字段 ——  
-    [Header("Speech-to-Text 配置")]
+    [Header("Speech-to-Text Config")]
     private const string sttEndpoint = "https://speech.googleapis.com/v1/speech:recognize";
     private AudioClip recording;
     private bool isRecording = false;
@@ -269,39 +269,35 @@ public class UnityAndGeminiV3 : MonoBehaviour
     //}
 
 
-    // —— 新增：开始录音 ——  
-    // 位置：SendChat() 方法之后
+    // **** Start Recording and STT **** // 
     public void StartVoiceInput()
     {
         if (isRecording) return;
         recording = Microphone.Start(null, false, 60, 16000);
         isRecording = true;
-        uiText.text = "Recording…";
+        aiResText.text = "Recording…";
     }
 
-    // —— 新增：停止录音并发起转写与对话 ——  
-    // 位置：紧接 StartVoiceInput() 之后
+    // **** Stop Recording and STT **** // 
     public void StopVoiceInput()
     {
         if (!isRecording) return;
         //Microphone.End(null);
-        // 先获取实际录了多少采样点
         recordedSamples = Microphone.GetPosition(null);
         Microphone.End(null);
 
         isRecording = false;
-        uiText.text = "Processing…";
+        aiResText.text = "Processing…";
         StartCoroutine(RecognizeAndSend());
     }
 
-    // —— 新增：录音→WAV→Base64→STT→拼接50词限制→调用 SendChat() ——  
-    // 位置：紧接 StopVoiceInput() 之后
+    // Record -> WAV -> Base64 -> JSON -> STT  
     private IEnumerator RecognizeAndSend()
     {
-        // —— A. 裁剪成只含 recordedSamples 的新 AudioClip —— 
+        // a new AudioClip is created to avoid the error of "AudioClip is not set to a valid value"
         if (recordedSamples <= 0)
         {
-            uiText.text = "录音失败，请重试";
+            aiResText.text = "Recording Failed, please retry";
             yield break;
         }
         AudioClip trimmed = AudioClip.Create(
@@ -314,17 +310,17 @@ public class UnityAndGeminiV3 : MonoBehaviour
         recording.GetData(allData, 0);
         trimmed.SetData(allData, 0);
 
-        // —— B. WAV 打包 ——  
+        // WAV to Base64 
         byte[] wavData = WavUtility.FromAudioClip(trimmed);
         if (wavData == null || wavData.Length <= 44)
         {
-            Debug.LogError("[STT] 录音数据太短，无法识别");
-            uiText.text = "请多说几句再试";
+            Debug.LogError("Recording too short to recognize");
+            aiResText.text = "Please tell me more about your question";
             yield break;
         }
         string base64 = Convert.ToBase64String(wavData);
 
-        // —— C. 构造请求 JSON ——  
+        // JSON request
         var reqObj = new SpeechRecognitionRequest
         {
             config = new RecognitionConfig(),
@@ -334,7 +330,7 @@ public class UnityAndGeminiV3 : MonoBehaviour
 
         string responseJson = null;
 
-        // —— D. 发送 STT 请求 ——  
+        // Send request to STT
         using (var www = new UnityWebRequest($"{sttEndpoint}?key={apiKey}", "POST"))
         {
             www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
@@ -345,27 +341,28 @@ public class UnityAndGeminiV3 : MonoBehaviour
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"[STT] {www.error}\nBody: {www.downloadHandler.text}");
-                uiText.text = "STT 错误";
+                aiResText.text = "STT Error";
                 yield break;
             }
 
-            // 在 using 内读取返回文本
+            // Get response
             responseJson = www.downloadHandler.text;
         }
 
-        // —— E. 解析转写并发给 Gemini ——  
+        // Send response to Gemini
         var resp = JsonUtility.FromJson<SpeechRecognitionResponse>(responseJson);
         if (resp.results != null && resp.results.Length > 0 &&
             resp.results[0].alternatives.Length > 0)
         {
             string transcript = resp.results[0].alternatives[0].transcript.Trim();
-            Debug.Log($"[STT] 识别结果：{transcript}");
+            Debug.Log($"[STT] Recognization：{transcript}");
+            aiResText.text = transcript;
             userMessage = transcript + " Please answer within 50 words.";
             SendChat();
         }
         else
         {
-            uiText.text = "未识别到文字";
+            aiResText.text = "NOTHING";
         }
     }
 }

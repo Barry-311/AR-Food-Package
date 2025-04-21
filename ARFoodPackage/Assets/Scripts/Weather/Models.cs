@@ -1,6 +1,6 @@
 using System;
 
-namespace YourNamespace.Weather
+namespace GetWeather.Weather
 {
     [Serializable]
     public class CurrentWeather

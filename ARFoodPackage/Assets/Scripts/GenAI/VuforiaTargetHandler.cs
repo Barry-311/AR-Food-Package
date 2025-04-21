@@ -1,6 +1,7 @@
 using UnityEngine;
 using Vuforia;
-using YourNamespace.Weather;
+using GetWeather.Weather;
+using System.Collections.Generic;
 
 public class VuforiaTargetHandler : MonoBehaviour
 {
@@ -8,6 +9,30 @@ public class VuforiaTargetHandler : MonoBehaviour
     public UnityAndGeminiV3 geminiScript;
     public WeatherService weatherService;
     private bool promptSent = false;
+
+    // Introduction models for two targets
+    private readonly Dictionary<string, string> brandIntroTemplates = new Dictionary<string, string>()
+{
+    { "bushmills", "Introduce the product: Bushmills Irish Whiskey (Triple distilled), " +
+            "including the history of this brand and the flavour of this product, " +
+            "in 50 words" },
+    { "starbucks", "Introduce the product: Starbucks Caramel Latte (Instant Coffee), " +
+            "including the brand features and how good this product is, " +
+            "in 50 words"}
+};
+
+    // Menu models for two targets including weather
+    private readonly Dictionary<string, string> recipeTemplates = new Dictionary<string, string>()
+{
+    { "bushmills", "The weather is：{weather}. " +
+            "Please recommend a recipe for drinking or mixing this Bushmills whisky, " +
+            "in 100 words" },
+    { "starbucks", "The weather is：{weather}. " +
+            "Please recommend a method and creative recipe for using Starbucks instant latte coffee, " +
+            "in 100 words" }
+};
+
+    private string currentTargetName;
 
     void Start()
     {
@@ -23,31 +48,50 @@ public class VuforiaTargetHandler : MonoBehaviour
 
     private void HandleTargetPrompt(ObserverBehaviour behaviour, TargetStatus targetStatus)
     {
+        Debug.Log($"[Vuforia] Detected target: '{behaviour.TargetName}'");
         if (promptSent) return;
-        if (behaviour == null || geminiScript == null) return;
-        if (targetStatus.Status != Status.TRACKED &&
-            targetStatus.Status != Status.EXTENDED_TRACKED)
+        if (targetStatus.Status != Status.TRACKED && targetStatus.Status != Status.EXTENDED_TRACKED)
             return;
 
+        currentTargetName = behaviour.TargetName.ToLower(); // bushmills or starbucks
+        promptSent = true;
+
+        if (brandIntroTemplates.TryGetValue(currentTargetName, out var introPrompt))
+        {
+            geminiScript.userMessage = introPrompt;
+            // geminiScript.SendChat();
+        }
+    }
+
+     public void TriggerBrandIntroPrompt()
+    {
+        if (string.IsNullOrEmpty(currentTargetName) || geminiScript == null) return;
+        // userMessage has been set in HandleTargetPrompt as brandIntroTemplates[currentTargetName]
+        geminiScript.SendChat();
+    }
+
+    public void TriggerRecipePrompt()
+    {
+        if (string.IsNullOrEmpty(currentTargetName)) return;
+
+        // get current weather
         weatherService.OnWeatherReceived += resp =>
         {
-            string targetName = behaviour.TargetName;
             var cw = resp.current_weather;
-            string summary = $"当前：{cw.temperature:F1}°C，风速{cw.windspeed:F1}m/s";
-            string prompt = $"Tell me something interesting about {targetName} " +
-                            $"given the weather ({summary}) in 30 words.";
-            Debug.Log($"[Vuforia+Weather] prompt: {prompt}");
+            string summary = $"{cw.temperature:F1}°C, Wind Speed is {cw.windspeed:F1}m/s";
 
-            // —— 只设置 userMessage，不发送 ——  
-            geminiScript.userMessage = prompt;
-            //geminiScript.uiText.text = "[Ready to send] " + prompt;
+            if (recipeTemplates.TryGetValue(currentTargetName, out var template))
+            {
+                // set userMessage and send chat
+                geminiScript.userMessage = template.Replace("{weather}", summary);
+                geminiScript.SendChat();
+            }
 
-            promptSent = true;
             weatherService.OnWeatherReceived = null;
         };
-
         weatherService.RequestCurrentWeather();
     }
+
 
     void OnDestroy()
     {
@@ -55,13 +99,4 @@ public class VuforiaTargetHandler : MonoBehaviour
             observerBehaviour.OnTargetStatusChanged -= OnTargetStatusChanged;
     }
 
-    /// <summary>
-    /// 按钮调用：发送上一步准备的 Prompt
-    /// </summary>
-    public void TriggerTargetPrompt()
-    {
-        if (!promptSent || geminiScript == null) return;
-        geminiScript.SendChat();
-        //geminiScript.uiText.text = "[Sent] " + geminiScript.userMessage;
-    }
 }
