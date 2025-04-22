@@ -4,7 +4,9 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+//using Codice.Utils;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 
 namespace Mediapipe.Unity.Sample
@@ -48,7 +50,9 @@ namespace Mediapipe.Unity.Sample
           }
         case AppSettings.AssetLoaderType.StreamingAssets:
           {
-            AssetLoader.Provide(new StreamingAssetsResourceManager());
+            AssetLoader.Provide(new StreamingAssetsResourceManager("MediaPipe"));
+            Debug.Log($"StreamingAssets Root Path: {Application.streamingAssetsPath}");
+            Debug.Log($"MediaPipe Model Path: {Path.Combine(Application.streamingAssetsPath, "MediaPipe/hand_landmarker.bytes")}");
             break;
           }
         case AppSettings.AssetLoaderType.Local:

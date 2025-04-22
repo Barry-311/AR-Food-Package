@@ -5,11 +5,11 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/FoodPackage.unity
+    guid: 615da9ae39f045b439c8bb8a40c91453
   - enabled: 0
-    path: Assets/SamplesResources/Scenes/0-Main.unity
-    guid: a09cb257d566c489595b16ab37547666
-  m_configObjects:
-    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: a0bacc9ffd727cf40965572325705969,
-      type: 2}
-    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 894a63ad2c817ce419dbc91d5b9a594f,
-      type: 2}
+    path: Assets/MediaPipeUnity/Samples/Scenes/Hand Landmark Detection/Hand Landmark
+      Detection.unity
+    guid: 98d49dcfe667ea822a91d6b74f7cb2e9
+  m_configObjects: {}

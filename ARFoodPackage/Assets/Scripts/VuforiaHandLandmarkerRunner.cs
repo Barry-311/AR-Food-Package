@@ -119,7 +119,7 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
         {
             return;
         }
-        //Debug.Log("Hand Detected!");
+        Debug.Log("Hand Detected!");
 
         Vector2[] screenPoints = new Vector2[result.handLandmarks.Count];
         for (int i = 0; i < result.handLandmarks.Count; i++)
@@ -168,8 +168,6 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
             wasPressing = false;
         }
     }
-
-#if UNITY_EDITOR
     private void OnGUI()
     {
         for (int i = 0; latestFingerScreenPoint != null && i < latestFingerScreenPoint.Length; i++)
@@ -197,5 +195,4 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
         //    GUI.DrawTexture(new UnityEngine.Rect(topLeft.x, UnityEngine.Screen.height - topLeft.y, width, height), Texture2D.whiteTexture);
         //}
     }
-#endif
 }

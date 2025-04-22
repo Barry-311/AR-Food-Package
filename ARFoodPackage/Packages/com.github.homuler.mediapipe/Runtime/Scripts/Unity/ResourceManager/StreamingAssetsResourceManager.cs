@@ -58,39 +58,49 @@ namespace Mediapipe.Unity
 
     private IEnumerator CreateCacheFile(string assetName)
     {
-      var cacheFilePath = GetCachePathFor(assetName);
+        var cacheFilePath = GetCachePathFor(assetName);
 
-      if (File.Exists(cacheFilePath))
-      {
+        if (File.Exists(cacheFilePath))
+        {
         yield break;
-      }
+        }
+        var assetPath = GetAssetPathFor(assetName);
+        Debug.Log($"Loading model from: {assetPath}");
 
-#if !UNITY_ANDROID && !UNITY_WEBGL
-      throw new FileNotFoundException($"{cacheFilePath} is not found");
+#if UNITY_ANDROID || UNITY_IOS || UNITY_WEBGL
+            using (var webRequest = UnityWebRequest.Get(assetPath))
+        {
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                if (!Directory.Exists(_CachePathRoot))
+                {
+                    var _ = Directory.CreateDirectory(_CachePathRoot);
+                }
+                Logger.LogVerbose(_TAG, $"Writing {assetName} data to {cacheFilePath}...");
+                var bytes = webRequest.downloadHandler.data;
+                File.WriteAllBytes(cacheFilePath, bytes);
+                Logger.LogVerbose(_TAG, $"{assetName} is saved to {cacheFilePath} (length={bytes.Length})");
+            }
+            else
+            {
+                throw new InternalException($"Failed to load {assetName}: {webRequest.error}");
+            }
+        }
 #else
-      var assetPath = GetAssetPathFor(assetName);
-      using (var webRequest = UnityWebRequest.Get(assetPath))
+      // ==== 修改点 3：非移动平台直接检查本地文件 ====
+      if (File.Exists(assetPath))
       {
-        yield return webRequest.SendWebRequest();
-
-        if (webRequest.result == UnityWebRequest.Result.Success)
-        {
-          if (!Directory.Exists(_CachePathRoot))
-          {
-            var _ = Directory.CreateDirectory(_CachePathRoot);
-          }
-          Logger.LogVerbose(_TAG, $"Writing {assetName} data to {cacheFilePath}...");
-          var bytes = webRequest.downloadHandler.data;
-          File.WriteAllBytes(cacheFilePath, bytes);
-          Logger.LogVerbose(_TAG, $"{assetName} is saved to {cacheFilePath} (length={bytes.Length})");
-        }
-        else
-        {
-          throw new InternalException($"Failed to load {assetName}: {webRequest.error}");
-        }
+        var bytes = File.ReadAllBytes(assetPath);
+        File.WriteAllBytes(cacheFilePath, bytes);
+      }
+      else
+      {
+        throw new FileNotFoundException($"{assetPath} is not found");
       }
 #endif
-    }
+        }
 
     private static string GetAssetPathFor(string assetName)
     {

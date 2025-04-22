@@ -101,3 +101,5 @@ __MACOSX/
 
 UserSettings/Layouts/*.dwlt
 
+/ARFoodPackage/buildSample
+ARFoodPackage/build.zip
