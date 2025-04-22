@@ -22,9 +22,11 @@ public class VuforiaTargetHandler : MonoBehaviour
 {
     { "bushmills", "Introduce the product: Bushmills Irish Whiskey (Triple distilled), " +
             "including the history of this brand and the flavour of this product, " +
+            "Introduce only the product and brand. Do not consider weather or recipes, " +
             "in 50 words" },
     { "starbucks", "Introduce the product: Starbucks Caramel Latte (Instant Coffee), " +
             "including the brand features and how good this product is, " +
+            "Introduce only the product and brand. Do not consider weather or recipes, " +
             "in 50 words"}
 };
 
@@ -121,7 +123,9 @@ public class VuforiaTargetHandler : MonoBehaviour
         weatherService.OnWeatherReceived += resp =>
         {
             var cw = resp.current_weather;
-            string summary = $"{cw.temperature:F1}°C, Wind Speed is {cw.windspeed:F1}m/s";
+            string desc = WeatherCodeHelper.GetWeatherDescription(cw.weathercode);
+
+            string summary = $"{desc}, {cw.temperature:F1}°C, wind {cw.windspeed:F1} m/s";
 
             if (recipeTemplates.TryGetValue(currentTargetName, out var template))
             {

@@ -3,7 +3,6 @@ using UnityEngine.Networking;
 using System;
 using System.Collections;
 
-// 注意命名空间要和 Models.cs 一致
 namespace GetWeather.Weather
 {
     public class WeatherService : MonoBehaviour
@@ -13,7 +12,7 @@ namespace GetWeather.Weather
         public double longitude = 13.41;
 
         /// <summary>
-        /// 获取到天气后回调（订阅后会收到 WeatherResponse）
+        /// 获取到天气后回调
         /// </summary>
         public Action<WeatherResponse> OnWeatherReceived;
 
@@ -33,6 +32,7 @@ namespace GetWeather.Weather
             using (var www = UnityWebRequest.Get(url))
             {
                 yield return www.SendWebRequest();
+
                 if (www.result != UnityWebRequest.Result.Success)
                 {
                     Debug.LogError($"[WeatherService] 请求失败：{www.error}");
