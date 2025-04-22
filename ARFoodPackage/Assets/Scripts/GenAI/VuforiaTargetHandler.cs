@@ -1,6 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Vuforia;
 using GetWeather.Weather;
+using System.Collections;
 using System.Collections.Generic;
 
 public class VuforiaTargetHandler : MonoBehaviour
@@ -8,6 +9,7 @@ public class VuforiaTargetHandler : MonoBehaviour
     private ObserverBehaviour observerBehaviour;
     public UnityAndGeminiV3 geminiScript;
     public WeatherService weatherService;
+    public GameObject Nutrients;
     private bool promptSent = false;
 
     // Introduction models for two targets
@@ -24,10 +26,10 @@ public class VuforiaTargetHandler : MonoBehaviour
     // Menu models for two targets including weather
     private readonly Dictionary<string, string> recipeTemplates = new Dictionary<string, string>()
 {
-    { "bushmills", "The weather is��{weather}. " +
+    { "bushmills", "The weather is：{weather}. " +
             "Please recommend a recipe for drinking or mixing this Bushmills whisky, " +
             "in 100 words" },
-    { "starbucks", "The weather is��{weather}. " +
+    { "starbucks", "The weather is：{weather}. " +
             "Please recommend a method and creative recipe for using Starbucks instant latte coffee, " +
             "in 100 words" }
 };
@@ -63,22 +65,40 @@ public class VuforiaTargetHandler : MonoBehaviour
         }
     }
 
-     public void TriggerBrandIntroPrompt()
+    // 新增：激活 Nutrients 后，10 秒再隐藏
+    private IEnumerator ShowNutrientsForSeconds(float seconds)
     {
-        if (string.IsNullOrEmpty(currentTargetName) || geminiScript == null) return;
-        // userMessage has been set in HandleTargetPrompt as brandIntroTemplates[currentTargetName]
-        geminiScript.SendChat();
+        if (Nutrients == null)
+            yield break;
+
+        Nutrients.SetActive(true);
+        yield return new WaitForSeconds(seconds);
+        Nutrients.SetActive(false);
     }
 
+    public void TriggerBrandIntroPrompt()
+    {
+
+        if (string.IsNullOrEmpty(currentTargetName) || geminiScript == null) return;
+
+        // 发送聊天
+        geminiScript.SendChat();
+
+    }
+
+    [ContextMenu("▶ Trigger Brand Intro")]
     public void TriggerRecipePrompt()
     {
+        // **新增**：启动协程，把 Nutrients 激活 10 秒后再隐藏
+        StartCoroutine(ShowNutrientsForSeconds(10f));
+
         if (string.IsNullOrEmpty(currentTargetName)) return;
 
         // get current weather
         weatherService.OnWeatherReceived += resp =>
         {
             var cw = resp.current_weather;
-            string summary = $"{cw.temperature:F1}��C, Wind Speed is {cw.windspeed:F1}m/s";
+            string summary = $"{cw.temperature:F1}°C, Wind Speed is {cw.windspeed:F1}m/s";
 
             if (recipeTemplates.TryGetValue(currentTargetName, out var template))
             {
