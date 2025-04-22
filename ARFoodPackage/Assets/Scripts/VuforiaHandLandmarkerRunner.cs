@@ -10,6 +10,7 @@ using System;
 using UnityEngine.UI;
 using System.Collections.Concurrent;
 using static Mediapipe.BoxDetectorOptions.Types;
+using Newtonsoft.Json.Linq;
 
 public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
 {
@@ -28,7 +29,7 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
 
     void Awake()
     {
-        config.NumHands = 10;
+        config.NumHands = 4;
     }
 
     void Update()
@@ -113,6 +114,25 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
         }
     }
 
+
+    private Vector2 ToScreenPoint(Mediapipe.Tasks.Components.Containers.NormalizedLandmark lm)
+    {
+        float rawX = lm.x;
+        float rawY = lm.y;
+
+#if !UNITY_EDITOR
+        // x/y 对调
+        float tmp = rawX;
+        rawX = rawY;
+        rawY = tmp;
+        rawX = 1.0f - rawX; // flip horizontally
+#endif
+        rawY = 1.0f - rawY;
+        float screenX = rawX * UnityEngine.Screen.width;
+        float screenY = rawY * UnityEngine.Screen.height;
+        return new Vector2(screenX, screenY);
+    }
+
     private void OnHandLandmarkDetectionOutput(HandLandmarkerResult result, Mediapipe.Image image, long timestamp)
     {
         if (result.handedness == null || result.handedness.Count == 0)
@@ -125,7 +145,7 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
         for (int i = 0; i < result.handLandmarks.Count; i++)
         {
             var indexTip = result.handLandmarks[i].landmarks[8];
-            screenPoints[i] = new Vector2(indexTip.x * UnityEngine.Screen.width, (1 - indexTip.y) * UnityEngine.Screen.height);
+            screenPoints[i] = ToScreenPoint(indexTip);
         }
 
         latestFingerScreenPoint = screenPoints;
