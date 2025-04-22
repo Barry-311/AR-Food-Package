@@ -10,6 +10,11 @@ public class VuforiaTargetHandler : MonoBehaviour
     public UnityAndGeminiV3 geminiScript;
     public WeatherService weatherService;
     public GameObject Nutrients;
+    public GameObject EarthRoot;
+    public GameObject Earth;
+
+    private GameObject earthInstance;
+
     private bool promptSent = false;
 
     // Introduction models for two targets
@@ -65,7 +70,7 @@ public class VuforiaTargetHandler : MonoBehaviour
         }
     }
 
-    // 新增：激活 Nutrients 后，10 秒再隐藏
+    // 新增：激活 Nutrients 后，8 秒再隐藏
     private IEnumerator ShowNutrientsForSeconds(float seconds)
     {
         if (Nutrients == null)
@@ -76,9 +81,27 @@ public class VuforiaTargetHandler : MonoBehaviour
         Nutrients.SetActive(false);
     }
 
+
+    /// <summary>
+    /// 等待 seconds 后销毁 go，并把实例引用清空
+    /// </summary>
+    private IEnumerator RemoveAfterSeconds(GameObject go, float seconds)
+     {
+    yield return new WaitForSeconds(seconds);
+            if (go != null) Destroy(go);
+            if (earthInstance == go) earthInstance = null;
+     }
+
+    [ContextMenu("▶ Trigger Brand Intro")]
     public void TriggerBrandIntroPrompt()
     {
-
+        // —— 新增：在 EarthRoot 下创建 Earth（如果没创建过的话）
+        if (earthInstance == null && EarthRoot != null && Earth != null)
+        {
+            earthInstance = Instantiate(Earth, EarthRoot.transform);
+            // 8 秒后删除它
+            StartCoroutine(RemoveAfterSeconds(earthInstance, 8f));
+        }
         if (string.IsNullOrEmpty(currentTargetName) || geminiScript == null) return;
 
         // 发送聊天
@@ -86,11 +109,11 @@ public class VuforiaTargetHandler : MonoBehaviour
 
     }
 
-    [ContextMenu("▶ Trigger Brand Intro")]
+    [ContextMenu("▶ Trigger Recipe Intro")]
     public void TriggerRecipePrompt()
     {
-        // **新增**：启动协程，把 Nutrients 激活 10 秒后再隐藏
-        StartCoroutine(ShowNutrientsForSeconds(10f));
+        // **新增**：启动协程，把 Nutrients 激活 8 秒后再隐藏
+        StartCoroutine(ShowNutrientsForSeconds(8f));
 
         if (string.IsNullOrEmpty(currentTargetName)) return;
 
