@@ -109,7 +109,27 @@ public class UnityAndGeminiV3 : MonoBehaviour
     {
         UnityAndGeminiKey jsonApiKey = JsonUtility.FromJson<UnityAndGeminiKey>(jsonApi.text);
         apiKey = jsonApiKey.key;
-        chatHistory = new TextContent[] { };
+
+        TextContent systemContent = new TextContent
+        {
+            role = "user",
+            parts = new TextPart[]
+        {
+            new TextPart
+            {
+                text =
+@"You are an AI specialized in creating captivating introductions for AR-enhanced food packaging. 
+Your goal is to spark curiosity and excitement about the product. 
+When responding, highlight Personal benefits and storytelling that resonate with users.
+Keep tone enthusiastic, concise (respect any word limits), and focused on customer engagement.
+Only output plain text without any special characters or formatting."
+            }
+        }
+        };
+
+        // 初始化聊天历史，只包含这条系统指令
+        chatHistory = new TextContent[] { systemContent };
+        //chatHistory = new TextContent[] { };
     }
 
     public void SendChat()
