@@ -8,7 +8,6 @@ using System;
 
 public class FingertipUIButtonSystem : MonoBehaviour
 {
-    [SerializeField] private Canvas canvasRoot;
     [SerializeField] private Camera uiCamera;
     [SerializeField] private float buttonCooldownSeconds = 1.0f;
 
@@ -18,21 +17,7 @@ public class FingertipUIButtonSystem : MonoBehaviour
 
     void Awake()
     {
-        if (canvasRoot == null)
-        {
-            Debug.LogError("Canvas root not assigned!");
-            return;
-        }
 
-        // 获取Canvas下所有Button
-        canvasButtons.AddRange(canvasRoot.GetComponentsInChildren<Button>(true));
-        Debug.Log($"Registered {canvasButtons.Count} buttons in canvas.");
-
-        // 初始化冷却状态
-        foreach (var btn in canvasButtons)
-        {
-            buttonCooldowns[btn] = -Mathf.Infinity;
-        }
     }
 
     void Update()
@@ -67,5 +52,23 @@ public class FingertipUIButtonSystem : MonoBehaviour
     public void QueueFingerScreenPoints(Vector2[] screenPoints)
     {
         fingertipQueue.Enqueue(screenPoints);
+    }
+
+    public void RefreshCanvasButtons(Canvas canvasRoot)
+    {
+        canvasButtons.Clear();
+        if(canvasRoot == null)
+        {
+            Debug.LogWarning("Canvas root is null, cannot refresh buttons.");
+            return;
+        }
+
+        canvasButtons.AddRange(canvasRoot.GetComponentsInChildren<Button>(true));
+        Debug.Log($"Refreshed and registered {canvasButtons.Count} buttons in canvas.");
+        // 初始化冷却状态
+        foreach (var btn in canvasButtons)
+        {
+            buttonCooldowns[btn] = -Mathf.Infinity;
+        }
     }
 }
