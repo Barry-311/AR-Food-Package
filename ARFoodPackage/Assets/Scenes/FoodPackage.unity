@@ -1686,6 +1686,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1041299811691723372, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1041299811691723372, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1041299811691723372, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 1
       objectReference: {fileID: 0}
@@ -1757,6 +1765,14 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5045367082298550699, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: e64a455f64fe25646b0df065b06edbcf, type: 2}
+    - target: {fileID: 6463737869180634257, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 1796fcbffbf144043adba13d6d3f0ee7, type: 2}
     - target: {fileID: 7896281864583600793, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
       propertyPath: m_Name
       value: HealNova
@@ -1764,6 +1780,14 @@ PrefabInstance:
     - target: {fileID: 8196235980730306042, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
       propertyPath: playOnAwake
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8196235980730306042, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8196235980730306042, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -4956,6 +4980,14 @@ PrefabInstance:
       propertyPath: playOnAwake
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1041299811691723372, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1041299811691723372, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 2885648562869539151, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.49
@@ -5023,6 +5055,14 @@ PrefabInstance:
     - target: {fileID: 8196235980730306042, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
       propertyPath: playOnAwake
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8196235980730306042, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8196235980730306042, guid: 184f9561e3cc642bca8a3a7436cc1e9c, type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
