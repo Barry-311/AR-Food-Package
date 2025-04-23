@@ -35,7 +35,7 @@ public class FPSCounter : MonoBehaviour
         fpsText = textObj.AddComponent<TextMeshProUGUI>();
 
         // 设置字体大小、颜色、对齐方式
-        fpsText.fontSize = 18;
+        fpsText.fontSize = 48;
         fpsText.color = Color.green;
         fpsText.alignment = TextAlignmentOptions.TopRight;
 
@@ -44,7 +44,7 @@ public class FPSCounter : MonoBehaviour
         rectTransform.anchorMin = new Vector2(1, 1);
         rectTransform.anchorMax = new Vector2(1, 1);
         rectTransform.pivot = new Vector2(1, 1);
-        rectTransform.anchoredPosition = new Vector2(-10, -10);
+        rectTransform.anchoredPosition = new Vector2(-50, -70);
         rectTransform.sizeDelta = new Vector2(200, 50);
     }
 
