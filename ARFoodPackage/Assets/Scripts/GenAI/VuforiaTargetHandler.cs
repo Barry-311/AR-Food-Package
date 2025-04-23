@@ -35,10 +35,10 @@ public class VuforiaTargetHandler : MonoBehaviour
 {
     { "bushmills", "The weather is：{weather}. " +
             "Please recommend a recipe for drinking or mixing this Bushmills whisky, " +
-            "in 100 words" },
+            "in 70 words" },
     { "starbucks", "The weather is：{weather}. " +
             "Please recommend a method and creative recipe for using Starbucks instant latte coffee, " +
-            "in 100 words" }
+            "in 70 words" }
 };
 
     private string currentTargetName;
@@ -94,9 +94,16 @@ public class VuforiaTargetHandler : MonoBehaviour
             if (earthInstance == go) earthInstance = null;
      }
 
+    [Header("Trigger Cooldown")]
+    public float triggerCooldown = 10f;  // 冷却时长（秒）
+    private float lastTriggerTime = -Mathf.Infinity;
+
     [ContextMenu("▶ Trigger Brand Intro")]
     public void TriggerBrandIntroPrompt()
     {
+        if (Time.time - lastTriggerTime < triggerCooldown) return;
+        lastTriggerTime = Time.time;
+
         // —— 新增：在 EarthRoot 下创建 Earth（如果没创建过的话）
         if (earthInstance == null && EarthRoot != null && Earth != null)
         {
@@ -114,6 +121,9 @@ public class VuforiaTargetHandler : MonoBehaviour
     [ContextMenu("▶ Trigger Recipe Intro")]
     public void TriggerRecipePrompt()
     {
+        if (Time.time - lastTriggerTime < triggerCooldown) return;
+        lastTriggerTime = Time.time;
+
         // **新增**：启动协程，把 Nutrients 激活 8 秒后再隐藏
         StartCoroutine(ShowNutrientsForSeconds(8f));
 

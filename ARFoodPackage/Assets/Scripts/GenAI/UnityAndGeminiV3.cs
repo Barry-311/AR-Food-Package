@@ -194,7 +194,7 @@ Only output plain text without any special characters or formatting."
                     Debug.Log(reply);
                     uiText.text = reply;
 
-                    ////Speak(reply);
+                    Speak(reply);
 
                     contentsList.Add(botContent);
                     chatHistory = contentsList.ToArray();
@@ -209,84 +209,84 @@ Only output plain text without any special characters or formatting."
 
     //****** TTS Function ******//
     // Get audio content from JSON response
-    //private string ExtractAudioContent(string json)
-    //{
-    //    const string key = "\"audioContent\": \"";
-    //    int start = json.IndexOf(key);
-    //    if (start < 0) return null;
-    //    start += key.Length;
-    //    int end = json.IndexOf("\"", start);
-    //    if (end < 0) return null;
-    //    return json.Substring(start, end - start);
-    //}
+    private string ExtractAudioContent(string json)
+    {
+        const string key = "\"audioContent\": \"";
+        int start = json.IndexOf(key);
+        if (start < 0) return null;
+        start += key.Length;
+        int end = json.IndexOf("\"", start);
+        if (end < 0) return null;
+        return json.Substring(start, end - start);
+    }
 
-    //// Play audio from file
-    //private IEnumerator PlayAudioFromFile(string filePath)
-    //{
-    //    using (var www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
-    //    {
-    //        yield return www.SendWebRequest();
-    //        if (www.result != UnityWebRequest.Result.Success)
-    //        {
-    //            Debug.LogError("Audio Load Error: " + www.error);
-    //        }
-    //        else
-    //        {
-    //            AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-    //            var audio = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
-    //            audio.clip = clip;
-    //            audio.Play();
-    //        }
-    //    }
-    //}
+    // Play audio from file
+    private IEnumerator PlayAudioFromFile(string filePath)
+    {
+        using (var www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
+        {
+            yield return www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Audio Load Error: " + www.error);
+            }
+            else
+            {
+                AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
+                var audio = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+                audio.clip = clip;
+                audio.Play();
+            }
+        }
+    }
 
-    //// Call TTS and save as MP3 and play
-    //public void Speak(string textToSpeak)
-    //{
-    //    StartCoroutine(SpeakText(textToSpeak));
-    //}
+    // Call TTS and save as MP3 and play
+    public void Speak(string textToSpeak)
+    {
+        StartCoroutine(SpeakText(textToSpeak));
+    }
 
-    //private IEnumerator SpeakText(string text)
-    //{
-    //    string url = $"{ttsEndpoint}?key={apiKey}";
+    private IEnumerator SpeakText(string text)
+    {
+        string url = $"{ttsEndpoint}?key={apiKey}";
 
-    //    // Use MP3 encoding
-    //    string jsonData = $@"
-    //    {{
-    //        ""input"": {{ ""text"": ""{text.Replace("\"", "\\\"")}"" }},
-    //        ""voice"": {{ ""languageCode"": ""en-US"", ""name"": ""en-US-Wavenet-D"" }},
-    //        ""audioConfig"": {{ ""audioEncoding"": ""MP3"" }}
-    //    }}";
+        // Use MP3 encoding
+        string jsonData = $@"
+        {{
+            ""input"": {{ ""text"": ""{text.Replace("\"", "\\\"")}"" }},
+            ""voice"": {{ ""languageCode"": ""en-US"", ""name"": ""en-US-Wavenet-D"" }},
+            ""audioConfig"": {{ ""audioEncoding"": ""MP3"" }}
+        }}";
 
-    //    byte[] postData = System.Text.Encoding.UTF8.GetBytes(jsonData);
+        byte[] postData = System.Text.Encoding.UTF8.GetBytes(jsonData);
 
-    //    using (var www = new UnityWebRequest(url, "POST"))
-    //    {
-    //        www.uploadHandler = new UploadHandlerRaw(postData);
-    //        www.downloadHandler = new DownloadHandlerBuffer();
-    //        www.SetRequestHeader("Content-Type", "application/json");
+        using (var www = new UnityWebRequest(url, "POST"))
+        {
+            www.uploadHandler = new UploadHandlerRaw(postData);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "application/json");
 
-    //        yield return www.SendWebRequest();
+            yield return www.SendWebRequest();
 
-    //        if (www.result != UnityWebRequest.Result.Success)
-    //        {
-    //            Debug.LogError("TTS Error: " + www.error);
-    //        }
-    //        else
-    //        {
-    //            Debug.Log("TTS Success!");
-    //            string responseJson = www.downloadHandler.text;
-    //            string audioBase64 = ExtractAudioContent(responseJson);
-    //            if (!string.IsNullOrEmpty(audioBase64))
-    //            {
-    //                byte[] audioData = Convert.FromBase64String(audioBase64);
-    //                string path = Path.Combine(Application.persistentDataPath, "tts.mp3");
-    //                File.WriteAllBytes(path, audioData);
-    //                StartCoroutine(PlayAudioFromFile(path));
-    //            }
-    //        }
-    //    }
-    //}
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("TTS Error: " + www.error);
+            }
+            else
+            {
+                Debug.Log("TTS Success!");
+                string responseJson = www.downloadHandler.text;
+                string audioBase64 = ExtractAudioContent(responseJson);
+                if (!string.IsNullOrEmpty(audioBase64))
+                {
+                    byte[] audioData = Convert.FromBase64String(audioBase64);
+                    string path = Path.Combine(Application.persistentDataPath, "tts.mp3");
+                    File.WriteAllBytes(path, audioData);
+                    StartCoroutine(PlayAudioFromFile(path));
+                }
+            }
+        }
+    }
 
 
     // **** Start Recording and STT **** // 
