@@ -30,6 +30,10 @@ public class VuforiaHandLandmarkerRunner : VisionTaskApiRunner<HandLandmarker>
     void Awake()
     {
         config.NumHands = 4;
+        Debug.Log("Application.targetFrameRate" + Application.targetFrameRate);
+#if UNITY_IOS
+        Application.targetFrameRate = 60;
+#endif
     }
 
     void Update()
